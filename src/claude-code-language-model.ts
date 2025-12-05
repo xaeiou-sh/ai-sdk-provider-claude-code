@@ -116,6 +116,12 @@ type ClaudeToolResult = {
   isError: boolean;
 };
 
+// Content part types for assistant messages
+type AssistantContentPart =
+  | { type: 'text'; text?: string }
+  | { type: 'thinking'; thinking?: string }
+  | { type: string; [key: string]: unknown };
+
 // Provider extension for tool-error stream parts.
 type ToolErrorPart = {
   type: 'tool-error';
@@ -421,6 +427,45 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
           error,
         };
       });
+  }
+
+  /**
+   * Extract text and thinking content from assistant message content array.
+   * Claude Code CLI returns thinking/reasoning traces in a specific format.
+   */
+  private extractTextAndThinking(content: unknown): {
+    text: string;
+    thinking: string[];
+  } {
+    if (!Array.isArray(content)) {
+      return { text: '', thinking: [] };
+    }
+
+    const textParts: string[] = [];
+    const thinkingParts: string[] = [];
+
+    for (const part of content) {
+      if (!part || typeof part !== 'object') {
+        continue;
+      }
+
+      const typedPart = part as AssistantContentPart;
+
+      if (typedPart.type === 'text' && 'text' in typedPart && typeof typedPart.text === 'string') {
+        textParts.push(typedPart.text);
+      } else if (
+        typedPart.type === 'thinking' &&
+        'thinking' in typedPart &&
+        typeof typedPart.thinking === 'string'
+      ) {
+        thinkingParts.push(typedPart.thinking);
+      }
+    }
+
+    return {
+      text: textParts.join(''),
+      thinking: thinkingParts,
+    };
   }
 
   private serializeToolInput(input: unknown): string {
@@ -752,6 +797,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
     const queryOptions = this.createQueryOptions(abortController, options.responseFormat);
 
     let text = '';
+    const thinkingTraces: string[] = [];
     let structuredOutput: unknown | undefined;
     let usage: LanguageModelV2Usage = { inputTokens: 0, outputTokens: 0, totalTokens: 0 };
     let finishReason: LanguageModelV2FinishReason = 'stop';
@@ -818,9 +864,11 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
       for await (const message of response) {
         this.logger.debug(`[claude-code] Received message type: ${message.type}`);
         if (message.type === 'assistant') {
-          text += message.message.content
-            .map((c: { type: string; text?: string }) => (c.type === 'text' ? c.text : ''))
-            .join('');
+          const { text: messageText, thinking } = this.extractTextAndThinking(
+            message.message.content
+          );
+          text += messageText;
+          thinkingTraces.push(...thinking);
         } else if (message.type === 'result') {
           done();
           this.setSessionId(message.session_id);
@@ -928,6 +976,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
           ...(durationMs !== undefined && { durationMs }),
           ...(rawUsage !== undefined && { rawUsage: rawUsage as JSONValue }),
           ...(wasTruncated && { truncated: true }),
+          ...(thinkingTraces.length > 0 && { thinkingTraces: thinkingTraces as JSONValue }),
         },
       },
     };
@@ -1002,6 +1051,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
         });
         const toolStates = new Map<string, ToolStreamState>();
         const streamWarnings: LanguageModelV2CallWarning[] = [];
+        const thinkingTraces: string[] = [];
 
         const closeToolInput = (toolId: string, state: ToolStreamState) => {
           if (!state.inputClosed && state.inputStarted) {
@@ -1235,9 +1285,8 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
                 }
               }
 
-              const text = content
-                .map((c: { type: string; text?: string }) => (c.type === 'text' ? c.text : ''))
-                .join('');
+              const { text, thinking } = this.extractTextAndThinking(content);
+              thinkingTraces.push(...thinking);
 
               if (text) {
                 // When we've received stream_events, assistant messages contain cumulative text
@@ -1554,6 +1603,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
                     ...(streamWarnings.length > 0 && {
                       warnings: warningsJson as unknown as JSONValue,
                     }),
+                    ...(thinkingTraces.length > 0 && { thinkingTraces: thinkingTraces as JSONValue }),
                   },
                 },
               });
@@ -1630,6 +1680,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
                   ...(streamWarnings.length > 0 && {
                     warnings: warningsJson as unknown as JSONValue,
                   }),
+                  ...(thinkingTraces.length > 0 && { thinkingTraces: thinkingTraces as JSONValue }),
                 },
               },
             });

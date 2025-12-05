@@ -1,5 +1,6 @@
 import type { ModelMessage } from 'ai';
 import type { SDKUserMessage } from '@anthropic-ai/claude-agent-sdk';
+import { Buffer } from 'node:buffer';
 
 type SDKUserContentPart = SDKUserMessage['message']['content'][number];
 
