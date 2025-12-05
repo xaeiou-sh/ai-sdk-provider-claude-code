@@ -961,6 +961,12 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
       usage,
       finishReason,
       warnings,
+      // AI SDK standard reasoning format
+      reasoning: thinkingTraces.map((text) => ({
+        type: 'reasoning' as const,
+        text,
+      })),
+      reasoningText: thinkingTraces.length > 0 ? thinkingTraces.join('\n\n') : undefined,
       response: {
         id: generateId(),
         timestamp: new Date(),
@@ -976,6 +982,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
           ...(durationMs !== undefined && { durationMs }),
           ...(rawUsage !== undefined && { rawUsage: rawUsage as JSONValue }),
           ...(wasTruncated && { truncated: true }),
+          // Keep thinkingTraces for backward compatibility
           ...(thinkingTraces.length > 0 && { thinkingTraces: thinkingTraces as JSONValue }),
         },
       },
@@ -1101,6 +1108,7 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
         let textPartId: string | undefined;
         let streamedTextLength = 0; // Track text already emitted via stream_events to avoid duplication
         let hasReceivedStreamEvents = false; // Track if we've received any stream_events
+        let reasoningPartId: string | undefined; // Track current reasoning block for AI SDK reasoning format
 
         try {
           // Emit stream-start with warnings
@@ -1286,7 +1294,36 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
               }
 
               const { text, thinking } = this.extractTextAndThinking(content);
-              thinkingTraces.push(...thinking);
+
+              // Emit reasoning stream parts for AI SDK standard format
+              for (const thinkingText of thinking) {
+                thinkingTraces.push(thinkingText);
+
+                // Emit reasoning-start if this is a new reasoning block
+                if (!reasoningPartId) {
+                  reasoningPartId = generateId();
+                  controller.enqueue({
+                    type: 'reasoning-start',
+                    id: reasoningPartId,
+                  } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+                }
+
+                // Emit reasoning-delta with the thinking text
+                controller.enqueue({
+                  type: 'reasoning-delta',
+                  id: reasoningPartId,
+                  delta: thinkingText,
+                } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+                // Emit reasoning-end to complete this reasoning block
+                controller.enqueue({
+                  type: 'reasoning-end',
+                  id: reasoningPartId,
+                } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
+
+                // Reset for next reasoning block
+                reasoningPartId = undefined;
+              }
 
               if (text) {
                 // When we've received stream_events, assistant messages contain cumulative text
