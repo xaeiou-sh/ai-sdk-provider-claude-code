@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { CoreMessage } from 'ai';
-import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.js';
+import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.ts';
 
 describe('convertToClaudeCodeMessages (images)', () => {
   it('includes data URL images in streaming content', () => {

@@ -5,7 +5,7 @@ import {
   validateSettings,
   validatePrompt,
   validateSessionId,
-} from './validation.js';
+} from './validation.ts';
 import * as fs from 'fs';
 
 // Mock fs module

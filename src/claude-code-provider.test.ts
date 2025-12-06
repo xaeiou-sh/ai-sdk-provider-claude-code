@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { createClaudeCode } from './claude-code-provider.js';
-import { ClaudeCodeLanguageModel } from './claude-code-language-model.js';
+import { createClaudeCode } from './claude-code-provider.ts';
+import { ClaudeCodeLanguageModel } from './claude-code-language-model.ts';
 
 describe('createClaudeCode', () => {
   it('should create a provider with default settings', () => {

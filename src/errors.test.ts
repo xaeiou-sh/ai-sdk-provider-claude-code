@@ -6,7 +6,7 @@ import {
   isAuthenticationError,
   isTimeoutError,
   getErrorMetadata,
-} from './errors.js';
+} from './errors.ts';
 import { APICallError, LoadAPIKeyError } from '@ai-sdk/provider';
 
 describe('Error Creation Functions', () => {

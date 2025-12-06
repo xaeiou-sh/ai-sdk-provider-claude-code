@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.js';
+import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.ts';
 import type { CoreMessage } from 'ai';
 
 describe('convertToClaudeCodeMessages', () => {

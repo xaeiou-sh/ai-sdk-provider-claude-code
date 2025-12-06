@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mapClaudeCodeFinishReason } from './map-claude-code-finish-reason.js';
+import { mapClaudeCodeFinishReason } from './map-claude-code-finish-reason.ts';
 
 describe('mapClaudeCodeFinishReason', () => {
   it('should map success to stop', () => {

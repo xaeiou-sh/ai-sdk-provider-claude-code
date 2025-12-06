@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getLogger, createVerboseLogger } from './logger.js';
-import type { Logger } from './types.js';
+import { getLogger, createVerboseLogger } from './logger.ts';
+import type { Logger } from './types.ts';
 
 describe('logger', () => {
   describe('getLogger', () => {

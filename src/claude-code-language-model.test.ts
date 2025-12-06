@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ClaudeCodeLanguageModel } from './claude-code-language-model.js';
+import { ClaudeCodeLanguageModel } from './claude-code-language-model.ts';
 import type { LanguageModelV2StreamPart } from '@ai-sdk/provider';
 
 // Extend stream part union locally to include provider-specific 'tool-error'

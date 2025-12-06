@@ -8,20 +8,20 @@
  * @see {@link createClaudeCode} for creating custom provider instances
  * @see {@link claudeCode} for the default provider instance
  */
-export { createClaudeCode, claudeCode } from './claude-code-provider.js';
+export { createClaudeCode, claudeCode } from './claude-code-provider.ts';
 
 /**
  * Type definitions for the Claude Code provider.
  * @see {@link ClaudeCodeProvider} for the provider interface
  * @see {@link ClaudeCodeProviderSettings} for provider configuration options
  */
-export type { ClaudeCodeProvider, ClaudeCodeProviderSettings } from './claude-code-provider.js';
+export type { ClaudeCodeProvider, ClaudeCodeProviderSettings } from './claude-code-provider.ts';
 
 /**
  * Language model implementation for Claude Code.
  * This class implements the AI SDK's LanguageModelV2 interface.
  */
-export { ClaudeCodeLanguageModel } from './claude-code-language-model.js';
+export { ClaudeCodeLanguageModel } from './claude-code-language-model.ts';
 
 /**
  * Type definitions for Claude Code language models.
@@ -31,17 +31,17 @@ export { ClaudeCodeLanguageModel } from './claude-code-language-model.js';
 export type {
   ClaudeCodeModelId,
   ClaudeCodeLanguageModelOptions,
-} from './claude-code-language-model.js';
+} from './claude-code-language-model.ts';
 
 /**
  * Settings for configuring Claude Code behavior.
  * Includes options for customizing the CLI execution, permissions, and tool usage.
  */
-export type { ClaudeCodeSettings, Logger } from './types.js';
+export type { ClaudeCodeSettings, Logger } from './types.ts';
 
 // Convenience re-exports from the SDK for custom tools and hooks
 export { createSdkMcpServer, tool } from '@anthropic-ai/claude-agent-sdk';
-export { createCustomMcpServer } from './mcp-helpers.js';
+export { createCustomMcpServer } from './mcp-helpers.ts';
 export type {
   HookEvent,
   HookCallback,
@@ -81,10 +81,10 @@ export {
   createAPICallError,
   createAuthenticationError,
   createTimeoutError,
-} from './errors.js';
+} from './errors.ts';
 
 /**
  * Metadata associated with Claude Code errors.
  * Contains additional context about CLI execution failures.
  */
-export type { ClaudeCodeErrorMetadata } from './errors.js';
+export type { ClaudeCodeErrorMetadata } from './errors.ts';

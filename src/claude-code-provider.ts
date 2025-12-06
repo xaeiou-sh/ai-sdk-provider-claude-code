@@ -1,9 +1,9 @@
 import type { LanguageModelV2, ProviderV2 } from '@ai-sdk/provider';
 import { NoSuchModelError } from '@ai-sdk/provider';
-import { ClaudeCodeLanguageModel, type ClaudeCodeModelId } from './claude-code-language-model.js';
-import type { ClaudeCodeSettings } from './types.js';
-import { validateSettings } from './validation.js';
-import { getLogger } from './logger.js';
+import { ClaudeCodeLanguageModel, type ClaudeCodeModelId } from './claude-code-language-model.ts';
+import type { ClaudeCodeSettings } from './types.ts';
+import { validateSettings } from './validation.ts';
+import { getLogger } from './logger.ts';
 
 /**
  * Claude Code provider interface that extends the AI SDK's ProviderV1.

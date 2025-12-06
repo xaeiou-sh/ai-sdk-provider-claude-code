@@ -8,12 +8,12 @@ import type {
 } from '@ai-sdk/provider';
 import { NoSuchModelError, APICallError, LoadAPIKeyError } from '@ai-sdk/provider';
 import { generateId } from '@ai-sdk/provider-utils';
-import type { ClaudeCodeSettings, Logger } from './types.js';
-import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.js';
-import { createAPICallError, createAuthenticationError, createTimeoutError } from './errors.js';
-import { mapClaudeCodeFinishReason } from './map-claude-code-finish-reason.js';
-import { validateModelId, validatePrompt, validateSessionId } from './validation.js';
-import { getLogger, createVerboseLogger } from './logger.js';
+import type { ClaudeCodeSettings, Logger } from './types.ts';
+import { convertToClaudeCodeMessages } from './convert-to-claude-code-messages.ts';
+import { createAPICallError, createAuthenticationError, createTimeoutError } from './errors.ts';
+import { mapClaudeCodeFinishReason } from './map-claude-code-finish-reason.ts';
+import { validateModelId, validatePrompt, validateSessionId } from './validation.ts';
+import { getLogger, createVerboseLogger } from './logger.ts';
 
 import { query, type Options } from '@anthropic-ai/claude-agent-sdk';
 import type { SDKUserMessage, SDKPartialAssistantMessage } from '@anthropic-ai/claude-agent-sdk';
@@ -957,16 +957,16 @@ export class ClaudeCodeLanguageModel implements LanguageModelV2 {
     const finalText = structuredOutput !== undefined ? JSON.stringify(structuredOutput) : text;
 
     return {
-      content: [{ type: 'text', text: finalText }],
+      content: [
+        ...thinkingTraces.map((text) => ({
+          type: 'reasoning' as const,
+          text,
+        })),
+        { type: 'text', text: finalText },
+      ],
       usage,
       finishReason,
       warnings,
-      // AI SDK standard reasoning format
-      reasoning: thinkingTraces.map((text) => ({
-        type: 'reasoning' as const,
-        text,
-      })),
-      reasoningText: thinkingTraces.length > 0 ? thinkingTraces.join('\n\n') : undefined,
       response: {
         id: generateId(),
         timestamp: new Date(),

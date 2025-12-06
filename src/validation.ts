@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { existsSync } from 'fs';
+import { existsSync } from 'node:fs';
 
 /**
  * Validation schemas and utilities for Claude Code provider inputs.
